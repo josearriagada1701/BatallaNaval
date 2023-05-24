@@ -4,7 +4,7 @@
 
 using namespace std;
 
-const int tam_tablero = 10;
+const int tam_tablero = 15;
 
 int tablero1[tam_tablero][tam_tablero];
 int tablero2[tam_tablero][tam_tablero];
@@ -32,14 +32,14 @@ int nAlearorio(int n){
 void colocar_piezas(int (*tablero)[tam_tablero], int t) {
 	//Portaaviones 5 casillas, buque 4 casillas
 	//, submarino 3 casillas, lancha 1 casilla.
-	int x = nAlearorio(7);
-	int y =nAlearorio(7);
+	int x = nAlearorio(tam_tablero-1);
+	int y =nAlearorio(tam_tablero-1);
 	// 0 abajo arriaba , 1 derecha izquierda
 	int d = nAlearorio(1);
 	int b = 0;
 	switch (d) {
 	        case 0:
-	        	if(y+t>=9){
+	        	if(y+t>tam_tablero){
 	        		colocar_piezas(tablero,t);
 	        		return;
 	        	}
@@ -53,7 +53,7 @@ void colocar_piezas(int (*tablero)[tam_tablero], int t) {
 	            break;
 	        
 	        case 1:
-	        	if(x+t>=9){
+	        	if(x+t>tam_tablero){
 	        		colocar_piezas(tablero,t);
 	        		return;
 	        	}
@@ -85,11 +85,18 @@ bool perdio(int (*tablero)[tam_tablero]){
 
 void disparar(int (*tablero)[tam_tablero]){
 
-	int x = nAlearorio(9);
-	int y = nAlearorio(9);
+	int x = nAlearorio(14);
+	int y = nAlearorio(14);
 
 	int aux = tablero[x][y];
-	tablero[x][y] = -1;
+	if(aux<0){
+		disparar(tablero);
+		return;
+	}
+	if(aux==0)
+		tablero[x][y] = -1;
+	else
+		tablero[x][y] = -2;
 	//Portaaviones 5 casillas, buque 4 casillas
 	//, submarino 3 casillas, lancha 1 casilla.
 	switch (aux) {
@@ -117,14 +124,29 @@ void iniciarJuego(){
 	cout << "Colocando Piezas Jugardor" << endl;
 	colocar_piezas(tablero1,5);
 	colocar_piezas(tablero1,4);
+	colocar_piezas(tablero1,4);
 	colocar_piezas(tablero1,3);
+	colocar_piezas(tablero1,3);
+	colocar_piezas(tablero1,1);
+	colocar_piezas(tablero1,1);
 	colocar_piezas(tablero1,1);
 
 	cout << "Colocando Piezas Maquina" << endl;
 	colocar_piezas(tablero2,5);
 	colocar_piezas(tablero2,4);
+	colocar_piezas(tablero2,4);
+	colocar_piezas(tablero2,3);
 	colocar_piezas(tablero2,3);
 	colocar_piezas(tablero2,1);
+	colocar_piezas(tablero2,1);
+	colocar_piezas(tablero2,1);
+
+	/*
+	cout << "Tablero Juagador" << endl;
+	imprimir_tablero(tablero1);
+	cout << "Tablero Maquina" << endl;
+	imprimir_tablero(tablero2);
+	*/
 
 	int b=1;
 	while(b!=0){
@@ -160,4 +182,6 @@ void iniciarJuego(){
 
 int main(){
 	iniciarJuego();
+
+
 }
