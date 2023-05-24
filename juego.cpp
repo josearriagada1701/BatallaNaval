@@ -32,54 +32,40 @@ int nAlearorio(int n){
 void colocar_piezas(int (*tablero)[tam_tablero], int t) {
 	//Portaaviones 5 casillas, buque 4 casillas
 	//, submarino 3 casillas, lancha 1 casilla.
-	int x = nAlearorio(9);
-	int y =nAlearorio(9);
+	int x = nAlearorio(7);
+	int y =nAlearorio(7);
 	// 0 abajo, 1 arriaba , 2 derecha y 3 izq
-	int d = nAlearorio(3);
+	int d = nAlearorio(1);
 	int b = 0;
-	d =0;
-	
-	
 	switch (d) {
 	        case 0:
-	        	for(int i=0;i<t && y+i<10;i++)
-	        		if(tablero[x][y+i]!=0)
+	        	if(y+t>=9){
+	        		colocar_piezas(tablero,t);
+	        		return;
+	        	}
+	        	for(int i=0;i<t;i++)
+	        		if(tablero[x][y+i]!=0){
 	        			colocar_piezas(tablero,t);
+	        			return;
+	        		}
 	        	for(int i=0;i<t;i++)
 	        			tablero[x][y+i]=t;
 	            break;
+	        
 	        case 1:
-	        	if(y-t>=0 && y+t<10){
-	        		for(int i=0;i<t;i++)
-	        			if(tablero[x][y-i]!=0){
-	        				colocar_piezas(tablero,t);
-	        			}
-	        		for(int i=0;i<t;i++)
-	        			tablero[x][y-i]=t;
+	        	if(x+t>=9){
+	        		colocar_piezas(tablero,t);
+	        		return;
+	        	}
+	        	for(int i=0;i<t;i++)
+	        		if(tablero[x+i][y]!=0){
+	        			colocar_piezas(tablero,t);
+	        			return;
 	        		}
-	            break;
-	        case 2:
-	        	if(x+t<=9 ){
-	        		for(int i=0;i<t;i++)
-	        			if(tablero[x+i][y]!=0){
-	        				colocar_piezas(tablero,t);
-	        			}
-	        		for(int i=0;i<t;i++)
+	        	for(int i=0;i<t;i++)
 	        			tablero[x+i][y]=t;
+	            break;
 
-	        	}
-	        	break;
-	        case 3:
-	        	if(x-t<=9 && x+t<10){
-	        		for(int i=0;i<t;i++)
-	        			if(tablero[x-i][y]!=0){
-	        				colocar_piezas(tablero,t);
-	        			}
-	        		for(int i=0;i<t;i++)
-	        			tablero[x-i][y]=t;
-
-	        	}
-	        	break;
 	        default:
 	            break;
 	}
@@ -93,7 +79,7 @@ void colocar_piezas(int (*tablero)[tam_tablero], int t) {
 int main(){
 	colocar_piezas(tablero1,5);
 	colocar_piezas(tablero1,4);
-	//colocar_piezas(tablero1,3);
-	//colocar_piezas(tablero1,1);
+	colocar_piezas(tablero1,3);
+	colocar_piezas(tablero1,1);
 	imprimir_tablero(tablero1);
 }
