@@ -175,13 +175,8 @@ void iniciarJuego(){
 	imprimir_tablero(tablero1);
 	cout << "Tablero Maquina" << endl;
 	imprimir_tablero(tablero2);
-
-
-
 }
 
 int main(){
 	iniciarJuego();
-
-
 }
