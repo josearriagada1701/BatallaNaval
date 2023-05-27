@@ -104,8 +104,8 @@ int main() {
                 if (delimiterPos != std::string::npos) {
                     std::string snum1 = message.substr(0, delimiterPos);
                     std::string snum2 = message.substr(delimiterPos + 1);
-                    int num1 = std::stoi(num1);
-                    int num2 = std::stoi(num2);
+                    int num1 = std::stoi(snum1);
+                    int num2 = std::stoi(snum2);
                 } else {
                     continue;
                 }
