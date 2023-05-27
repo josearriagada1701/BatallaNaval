@@ -3,16 +3,20 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <thread>
+#include <vector>
+#include <mutex>
+#include <algorithm>
 #include "juego.cpp"
 
 class Server {
 private:
     int serverSocket;
     int clientSocket;
-    
+    std::mutex mutex;
+    std::vector<std::thread> threads;
 
 public:
-    BatallaNaval juego;
     Server() : serverSocket(-1), clientSocket(-1) {}
 
     bool Start(int port) {
@@ -36,7 +40,7 @@ public:
         }
 
         // Escuchar conexiones entrantes
-        if (listen(serverSocket, 1) == -1) {
+        if (listen(serverSocket, 5) == -1) {
             std::cerr << "Error al escuchar conexiones entrantes" << std::endl;
             return false;
         }
@@ -77,11 +81,78 @@ public:
     }
 
     void Close() {
-        // Cerrar el socket del servidor
-        close(serverSocket);
-
         // Cerrar el socket del cliente
         close(clientSocket);
+    }
+
+    void ClientHandler() {
+        std::string message;
+        BatallaNaval juego;
+        juego.iniciarJuego();
+
+        while (true) {
+            std::cout << "Turno " << juego.turno << std::endl;
+            message = ReceiveMessage();
+            if (message.empty()) {
+                std::cout << "Error al recibir mensaje. Finalizando conexión..." << std::endl;
+                break;
+            }
+
+            std::cout << "Mensaje recibido: " << message << std::endl;
+
+            size_t delimiterPos = message.find('&');
+            if (delimiterPos != std::string::npos) {
+                int num1 = std::stoi(message.substr(0, delimiterPos));
+                int num2 = std::stoi(message.substr(delimiterPos + 1));
+                std::cout << "Disparando Jugador: " << num1 << " " << num2 << std::endl;
+                std::string respuesta = juego.disparar(num1, num2);
+                SendMessage(respuesta);
+                if (juego.perdio()) {
+                    std::cout << "Jugador perdió. Finalizando conexión..." << std::endl;
+                    break;
+                }
+                std::cout << "Disparando Máquina..." << std::endl;
+                juego.disparar(0, 0);
+                if (juego.perdio()) {
+                    std::cout << "Máquina perdió. Finalizando conexión..." << std::endl;
+                    break;
+                }
+            } else {
+                std::cout << "Mensaje inválido. Se esperaba formato 'num1&num2'" << std::endl;
+                break;
+            }
+        }
+
+        Close();
+
+        // Bloquear el mutex antes de eliminar el hilo
+        std::lock_guard<std::mutex> lock(mutex);
+
+        // Buscar y eliminar el hilo actual de la lista
+        auto it = std::find_if(threads.begin(), threads.end(), [&](const std::thread& t) {
+            return t.get_id() == std::this_thread::get_id();
+        });
+        if (it != threads.end()) {
+            it->detach();
+            threads.erase(it);
+        }
+    }
+
+    void HandleConnections() {
+        while (true) {
+            if (Accept()) {
+                std::cout << "Cliente conectado. Esperando mensajes..." << std::endl;
+
+                // Crear un nuevo hilo para atender al cliente
+                std::thread thread(&Server::ClientHandler, this);
+
+                // Bloquear el mutex antes de agregar el hilo a la lista
+                std::lock_guard<std::mutex> lock(mutex);
+
+                // Agregar el hilo a la lista
+                threads.push_back(std::move(thread));
+            }
+        }
     }
 };
 
@@ -89,46 +160,7 @@ int main() {
     Server server;
     if (server.Start(8080)) {
         std::cout << "Servidor iniciado. Esperando conexiones entrantes..." << std::endl;
-
-        if (server.Accept()) {
-            std::cout << "Cliente conectado. Esperando mensajes..." << std::endl;
-
-            server.juego.iniciarJuego(); // Iniciar el juego Batalla Naval
-
-            while (true) {
-                
-                int num1, num2;
-                std::string message = server.ReceiveMessage();
-                cout << message << endl;
-                size_t delimiterPos = message.find('&');
-
-                if (delimiterPos != std::string::npos) {
-                    std::string snum1 = message.substr(0, delimiterPos);
-                    std::string snum2 = message.substr(delimiterPos + 1);
-                    num1 = std::stoi(snum1);
-                    num2 = std::stoi(snum2);
-                } else {
-                    continue;
-}
-                cout << "Diparando Jugador: " << num1 << " " << num2 << endl;
-                std::string respuesta = server.juego.disparar(num1, num2);
-
-                // Enviar respuesta al cliente (puedes ajustar el mensaje según tus necesidades)
-                server.SendMessage(respuesta);
-                
-                if (server.juego.perdio()) 
-                    break;
-
-                cout << "Diparando Maquina" << endl;
-
-                server.juego.disparar(-1, -1);
-                if(server.juego.perdio())
-                    break;
-
-            }
-        }
-
-        server.Close();
+        server.HandleConnections();
     }
 
     return 0;

@@ -11,9 +11,10 @@ class BatallaNaval {
 private:
     int tablero1[tam_tablero][tam_tablero];
     int tablero2[tam_tablero][tam_tablero];
-    int turno = 1;
+    
 
 public:
+    int turno = 1;
     BatallaNaval() {
         for (int i = 0; i < tam_tablero; i++) {
             for (int j = 0; j < tam_tablero; j++) {
