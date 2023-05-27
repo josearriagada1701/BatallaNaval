@@ -97,26 +97,30 @@ int main() {
 
             while (true) {
                 
-                int num1,num2;
+                int num1, num2;
                 std::string message = server.ReceiveMessage();
+                cout << message << endl;
                 size_t delimiterPos = message.find('&');
 
                 if (delimiterPos != std::string::npos) {
                     std::string snum1 = message.substr(0, delimiterPos);
                     std::string snum2 = message.substr(delimiterPos + 1);
-                    int num1 = std::stoi(snum1);
-                    int num2 = std::stoi(snum2);
+                    num1 = std::stoi(snum1);
+                    num2 = std::stoi(snum2);
                 } else {
                     continue;
-                }
-
-                return 0;            
+}
+                cout << "Diparando Jugador: " << num1 << " " << num2 << endl;
                 std::string respuesta = server.juego.disparar(num1, num2);
 
                 // Enviar respuesta al cliente (puedes ajustar el mensaje según tus necesidades)
                 server.SendMessage(respuesta);
+                
                 if (server.juego.perdio()) 
-                     break;
+                    break;
+
+                cout << "Diparando Maquina" << endl;
+
                 server.juego.disparar(-1, -1);
                 if(server.juego.perdio())
                     break;

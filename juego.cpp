@@ -136,7 +136,7 @@ public:
                 int aux = tablero[i][j];
                 //Todas la embarcaciones son mayores que 0
                 if (aux > 0) {
-                    return false;
+                    return false; // no ha perdido
                 }
             }
         }
