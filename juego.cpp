@@ -1,5 +1,7 @@
 #include <iostream>
 #include <random>
+#include <string>
+#include <sstream>
 
 using namespace std;
 
@@ -9,6 +11,7 @@ class BatallaNaval {
 private:
     int tablero1[tam_tablero][tam_tablero];
     int tablero2[tam_tablero][tam_tablero];
+    int turno = 1;
 
 public:
     BatallaNaval() {
@@ -26,36 +29,41 @@ public:
     }
 
     //Recibe el tablero maquina o jugador y imprime el detalle 
-    void imprimir_tablero(int (*tablero)[tam_tablero]) {
-        for (int i = 0; i < tam_tablero; i++) {
-            cout << transformarNumeroALetra(i) << " ";
-            for (int j = 0; j < tam_tablero; j++) {
-            //puse el tamaño de la embarcación y el negativo es cuando
-            //undidos
-            switch(tablero[i][j]){
+    
+
+    void imprimir(int (*tablero)[15], std::string& salida) {
+    
+    stringstream buffer;
+
+    for (int i = 0; i < 15; i++) {
+        buffer << transformarNumeroALetra(i) << " ";
+        for (int j = 0; j < 15; j++) {
+            // Puse el tamaño de la embarcación y el negativo es cuando están undidos
+            switch (tablero[i][j]) {
                 case -1:
-                    cout << "L ";
+                    buffer << "L ";
                     break;
                 case -3:
-                    cout << "S ";
+                    buffer << "S ";
                     break;
                 case -4:
-                    cout << "B ";
+                    buffer << "B ";
                     break;
                 case -5:
-                    cout << "P ";
+                    buffer << "P ";
                     break;
                 default:
-                    cout << "  ";
+                    buffer << "  ";
                     break;
-                }
             }
-            cout << endl;
-
         }
-        cout << "-------------------------------" << endl;
-        cout << "  1 2 3 4 5 6 7 8 9 . . . . . 15" << endl;
+        buffer << std::endl;
     }
+    buffer << "-------------------------------" << std::endl;
+    buffer << "  1 2 3 4 5 6 7 8 9 . . . . . 15" << std::endl;
+
+    salida = buffer.str();
+}
 
     int nAlearorio(int n) {
         random_device rd;
@@ -116,8 +124,13 @@ public:
         }
     }
 
+    //Es para el server 
+    bool perdio(){
+        return perdio2(tablero1) || perdio2(tablero2);
+    }
+
     //Pregunta si quedan embarcaciones
-    bool perdio(int (*tablero)[tam_tablero]) {
+    bool perdio2(int (*tablero)[tam_tablero]) {
         for (int i = 0; i < tam_tablero; i++) {
             for (int j = 0; j < tam_tablero; j++) {
                 int aux = tablero[i][j];
@@ -130,15 +143,10 @@ public:
         return true;
     }
 
-    void disparar(int (*tablero)[tam_tablero]) {
-        int x = nAlearorio(14);
-        int y = nAlearorio(14);
+    void dispararTablero(int (*tablero)[tam_tablero],int x,int y) {
+        
 
         int aux = tablero[x][y];
-        if (aux < 0) {
-            disparar(tablero);
-            return;
-        }
         //La emabarciones son mayores que 0, y representadas por su tamaño
         //menor que cero es que disparé ahí 
         //Para diparo en el agua
@@ -171,32 +179,28 @@ public:
         colocar_piezas(tablero2, 1);
         colocar_piezas(tablero2, 1);
         colocar_piezas(tablero2, 1);
-
-        int b = 1;
-        while (b != 0) {
-            if (b % 2 == 1) {
-                disparar(tablero1);
-            } else {
-                disparar(tablero2);
-            }
-            if (perdio(tablero1) || perdio(tablero2)) {
-                b = 0;
-            } else {
-                b++;
-            }
-        }
-        cout << "Tablero Jugador" << endl;
-        imprimir_tablero(tablero1);
-        cout << "Tablero Maquina" << endl;
-        imprimir_tablero(tablero2);
     }
+
+
+   string disparar(int n1, int n2) {
+    string salida;
+
+    if (!perdio2(tablero1) && !perdio2(tablero2)) {
+        if (turno % 2 == 1) {
+            cout << "Disparo Jugador";
+            dispararTablero(tablero1,n1,n2);
+            imprimir(tablero1, salida);
+        } else {
+            cout << "Disparo Maquina";
+            dispararTablero(tablero2,nAlearorio(14),nAlearorio(14));
+            imprimir(tablero2, salida);
+        }
+    } else {
+        salida = "Juego Terminado";
+    }
+
+    return salida;
+    }
+
 };
 
-
-int main() {
-    BatallaNaval juego;
-    juego.iniciarJuego();
-
-    return 0;
-}
-           
