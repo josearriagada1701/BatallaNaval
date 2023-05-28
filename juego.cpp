@@ -178,7 +178,7 @@ public:
     }
 
     void iniciarJuego() {
-        cout << "Colocando Piezas Jugador" << endl;
+
         colocar_piezas(tablero1, 5);
         colocar_piezas(tablero1, 4);
         colocar_piezas(tablero1, 4);
@@ -188,7 +188,6 @@ public:
         colocar_piezas(tablero1, 1);
         colocar_piezas(tablero1, 1);
 
-        cout << "Colocando Piezas Maquina" << endl;
         colocar_piezas(tablero2, 5);
         colocar_piezas(tablero2, 4);
         colocar_piezas(tablero2, 4);

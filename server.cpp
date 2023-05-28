@@ -96,31 +96,36 @@ public:
         while (true) {
             message = ReceiveMessage();
             if (message.empty()) {
-                cout << "Error al recibir mensaje. Finalizando conexión..." << endl;
                 break;
             }
 
-            cout << "Mensaje recibido: " << message << endl;
+            
 
             size_t delimiterPos = message.find('&');
             if (delimiterPos != string::npos) {
                 int num1 = stoi(message.substr(0, delimiterPos));
                 int num2 = stoi(message.substr(delimiterPos + 1));
-                quien2 = "Juego [" + quien + "] Cliente";
+                if(juego.turno == 1)
+                    cout << "Juego ["<< quien <<"]: inicia disparos el cliente." << endl;
+                //else
+                    quien2 = "Juego [" + quien + "]: Cliente";
                 string respuesta = juego.disparar(num1, num2, quien2);
                 SendMessage(respuesta);
                 if (juego.perdio()) {
-                    cout << "Jugador perdió. Finalizando conexión..." << endl;
+                    cout << "Juego [" << quien <<"]: gana cliente" << endl;
                     break;
                 }
-                quien2 = "Juego [" + quien + "] Servidor";
+                if(juego.turno == 2)
+                    cout << "Juego ["<< quien <<"]: inicia disparos el cliente." << endl;
+                //else
+                    quien2 = "Juego [" + quien + "]: Servidor";
                 juego.disparar(0, 0, quien2);
                 if (juego.perdio()) {
-                    cout << "Máquina perdió. Finalizando conexión..." << endl;
+                    cout << "Juego [" << quien <<"]: gana servidor" << endl;
                     break;
                 }
             } else {
-                cout << "Mensaje inválido. Se esperaba formato 'num1&num2'" << endl;
+                
                 break;
             }
         }
@@ -156,6 +161,7 @@ public:
                 string clientPort = to_string(port);
                 quien = clientIP + ":" + clientPort;
 
+                cout << "Juego nuevo [" << quien << "]" << endl;
                 // Crear un nuevo hilo para atender al cliente
                 thread thread(&Server::ClientHandler, this, quien);
 
