@@ -176,11 +176,17 @@ public:
     }
 };
 
-int main() {
-    Server server;
-    if (server.Start(8080)) {
-        cout << "Esperando conexiones ..." << endl;
-        server.HandleConnections();
+int main(int argc, char* argv[]) {
+    if (argc == 2) {
+        int puerto = stoi(argv[1]);
+        Server server;
+        if (server.Start(puerto)) {
+            std::cout << "Esperando conexiones ..." << std::endl;
+            server.HandleConnections();
+        }
+    } else {
+        std::cout << "Uso: programa <puerto>" << std::endl;
+        return 1;
     }
 
     return 0;

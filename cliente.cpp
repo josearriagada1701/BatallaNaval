@@ -66,9 +66,22 @@ public:
     }
 };
 
-int main() {
+int main(int argc, char* argv[]) {
+
+    //127.0.0.1
+    string ip;
+    int puerto;
+    if (argc == 3) {
+        ip = argv[1];
+        puerto = stoi(argv[2]);
+        }
+    else{
+        cout << "Uso: programa <ip> <puerto>"<< endl;
+        return 0;
+    }
+
     Client client;
-    if (client.Connect("127.0.0.1", 8080)) {
+    if (client.Connect(ip, puerto)) {
 
         while(true){
             int numero1, numero2;
