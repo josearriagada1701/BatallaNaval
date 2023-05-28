@@ -72,22 +72,21 @@ int main() {
             int numero1, numero2;
 
             // Pedir el primer número
-            std::cout << "Ingrese el primer número (entre 0 y 15): ";
+            std::cout << "Posición X(0,15): ";
             std::cin >> numero1;
 
             // Verificar si está dentro del rango
             while (numero1 < 0 || numero1 > 15) {
-                std::cout << "El número ingresado está fuera del rango. Por favor, ingrese un número entre 0 y 15: ";
-                std::cin >> numero1;
+                std::cout << "El número ingresado está fuera del rango.";
             }
 
             // Pedir el segundo número
-            std::cout << "Ingrese el segundo número (entre 0 y 15): ";
+            std::cout << "Posición Y:(0,15): ";
             std::cin >> numero2;
 
             // Verificar si está dentro del rango
             while (numero2 < 0 || numero2 > 15) {
-                std::cout << "El número ingresado está fuera del rango. Por favor, ingrese un número entre 0 y 15: ";
+                std::cout << "El número ingresado está fuera del rango.";
                 std::cin >> numero2;
             }
             std::string mensaje = std::to_string(numero1) + "&" + std::to_string(numero2);

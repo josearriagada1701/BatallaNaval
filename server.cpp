@@ -8,13 +8,16 @@
 #include <mutex>
 #include <algorithm>
 #include "juego.cpp"
+#include <arpa/inet.h>
+
+using namespace std;
 
 class Server {
 private:
     int serverSocket;
     int clientSocket;
-    std::mutex mutex;
-    std::vector<std::thread> threads;
+    mutex mutexServer; // Cambio de nombre de 'mutex' a 'mutexServer'
+    vector<thread> threads;
 
 public:
     Server() : serverSocket(-1), clientSocket(-1) {}
@@ -23,25 +26,25 @@ public:
         // Crear el socket del servidor
         serverSocket = socket(AF_INET, SOCK_STREAM, 0);
         if (serverSocket == -1) {
-            std::cerr << "Error al crear el socket" << std::endl;
+            cerr << "Error al crear el socket" << endl;
             return false;
         }
 
         // Configurar la dirección del servidor
-        struct sockaddr_in serverAddress;
+        sockaddr_in serverAddress;
         serverAddress.sin_family = AF_INET;
         serverAddress.sin_addr.s_addr = INADDR_ANY;
         serverAddress.sin_port = htons(port);
 
         // Vincular el socket a la dirección del servidor
         if (bind(serverSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == -1) {
-            std::cerr << "Error al vincular el socket a la dirección del servidor" << std::endl;
+            cerr << "Error al vincular el socket a la dirección del servidor" << endl;
             return false;
         }
 
         // Escuchar conexiones entrantes
         if (listen(serverSocket, 5) == -1) {
-            std::cerr << "Error al escuchar conexiones entrantes" << std::endl;
+            cerr << "Error al escuchar conexiones entrantes" << endl;
             return false;
         }
 
@@ -52,30 +55,30 @@ public:
         // Aceptar la conexión del cliente
         clientSocket = accept(serverSocket, nullptr, nullptr);
         if (clientSocket == -1) {
-            std::cerr << "Error al aceptar la conexión del cliente" << std::endl;
+            cerr << "Error al aceptar la conexión del cliente" << endl;
             return false;
         }
 
         return true;
     }
 
-    std::string ReceiveMessage() {
+    string ReceiveMessage() {
         char buffer[1024];
 
         // Leer el mensaje del cliente
         memset(buffer, 0, sizeof(buffer));
         if (read(clientSocket, buffer, sizeof(buffer)) == -1) {
-            std::cerr << "Error al leer el mensaje del cliente" << std::endl;
+            cerr << "Error al leer el mensaje del cliente" << endl;
             return "";
         }
 
-        return std::string(buffer);
+        return string(buffer);
     }
 
-    void SendMessage(const std::string& message) {
+    void SendMessage(const string& message) {
         // Enviar respuesta al cliente
         if (write(clientSocket, message.c_str(), message.size()) == -1) {
-            std::cerr << "Error al enviar la respuesta al cliente" << std::endl;
+            cerr << "Error al enviar la respuesta al cliente" << endl;
             return;
         }
     }
@@ -85,40 +88,39 @@ public:
         close(clientSocket);
     }
 
-    void ClientHandler() {
-        std::string message;
+    void ClientHandler(string quien) {
+        string message;
         BatallaNaval juego;
         juego.iniciarJuego();
-
+        string quien2;
         while (true) {
-            std::cout << "Turno " << juego.turno << std::endl;
             message = ReceiveMessage();
             if (message.empty()) {
-                std::cout << "Error al recibir mensaje. Finalizando conexión..." << std::endl;
+                cout << "Error al recibir mensaje. Finalizando conexión..." << endl;
                 break;
             }
 
-            std::cout << "Mensaje recibido: " << message << std::endl;
+            cout << "Mensaje recibido: " << message << endl;
 
             size_t delimiterPos = message.find('&');
-            if (delimiterPos != std::string::npos) {
-                int num1 = std::stoi(message.substr(0, delimiterPos));
-                int num2 = std::stoi(message.substr(delimiterPos + 1));
-                std::cout << "Disparando Jugador: " << num1 << " " << num2 << std::endl;
-                std::string respuesta = juego.disparar(num1, num2);
+            if (delimiterPos != string::npos) {
+                int num1 = stoi(message.substr(0, delimiterPos));
+                int num2 = stoi(message.substr(delimiterPos + 1));
+                quien2 = "Juego [" + quien + "] Cliente";
+                string respuesta = juego.disparar(num1, num2, quien2);
                 SendMessage(respuesta);
                 if (juego.perdio()) {
-                    std::cout << "Jugador perdió. Finalizando conexión..." << std::endl;
+                    cout << "Jugador perdió. Finalizando conexión..." << endl;
                     break;
                 }
-                std::cout << "Disparando Máquina..." << std::endl;
-                juego.disparar(0, 0);
+                quien2 = "Juego [" + quien + "] Servidor";
+                juego.disparar(0, 0, quien2);
                 if (juego.perdio()) {
-                    std::cout << "Máquina perdió. Finalizando conexión..." << std::endl;
+                    cout << "Máquina perdió. Finalizando conexión..." << endl;
                     break;
                 }
             } else {
-                std::cout << "Mensaje inválido. Se esperaba formato 'num1&num2'" << std::endl;
+                cout << "Mensaje inválido. Se esperaba formato 'num1&num2'" << endl;
                 break;
             }
         }
@@ -126,11 +128,11 @@ public:
         Close();
 
         // Bloquear el mutex antes de eliminar el hilo
-        std::lock_guard<std::mutex> lock(mutex);
+        lock_guard<mutex> lock(mutexServer);
 
         // Buscar y eliminar el hilo actual de la lista
-        auto it = std::find_if(threads.begin(), threads.end(), [&](const std::thread& t) {
-            return t.get_id() == std::this_thread::get_id();
+        auto it = find_if(threads.begin(), threads.end(), [&](const thread& t) {
+            return t.get_id() == this_thread::get_id();
         });
         if (it != threads.end()) {
             it->detach();
@@ -139,18 +141,30 @@ public:
     }
 
     void HandleConnections() {
+        string quien;
+        int JugadorN = 1;
         while (true) {
             if (Accept()) {
-                std::cout << "Cliente conectado. Esperando mensajes..." << std::endl;
+                sockaddr_in clientAddress;
+                socklen_t clientAddressLength = sizeof(clientAddress);
+                getpeername(clientSocket, (struct sockaddr *)&clientAddress, &clientAddressLength);
+                
+
+                uint16_t port = ntohs(clientAddress.sin_port);
+
+                string clientIP = inet_ntoa(clientAddress.sin_addr);
+                string clientPort = to_string(port);
+                quien = clientIP + ":" + clientPort;
 
                 // Crear un nuevo hilo para atender al cliente
-                std::thread thread(&Server::ClientHandler, this);
+                thread thread(&Server::ClientHandler, this, quien);
 
                 // Bloquear el mutex antes de agregar el hilo a la lista
-                std::lock_guard<std::mutex> lock(mutex);
+                lock_guard<mutex> lock(mutexServer);
 
                 // Agregar el hilo a la lista
-                threads.push_back(std::move(thread));
+                threads.push_back(move(thread));
+               
             }
         }
     }
@@ -159,7 +173,7 @@ public:
 int main() {
     Server server;
     if (server.Start(8080)) {
-        std::cout << "Servidor iniciado. Esperando conexiones entrantes..." << std::endl;
+        cout << "Esperando conexiones ..." << endl;
         server.HandleConnections();
     }
 

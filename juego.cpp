@@ -144,7 +144,7 @@ public:
         return true;
     }
 
-    void dispararTablero(int (*tablero)[tam_tablero],int x,int y) {
+    void dispararTablero(int (*tablero)[tam_tablero],int x,int y, string quien) {
         
 
         int aux = tablero[x][y];
@@ -157,6 +157,23 @@ public:
         } else {
             tablero[x][y] = aux*-1;
         }
+        switch (aux) {
+                case -1:
+                    cout << quien << " hunde Lancha" << endl;
+                    break;
+                case -3:
+                    cout << quien << " hunde Submarino" << endl;
+                    break;
+                case -4:
+                    cout << quien << " hunde Buque" << endl;
+                    break;
+                case -5:
+                    cout << quien << " hunde Portaviones" << endl;
+                    break;
+                default:
+                    cout << quien << " dispara al mar" << endl;
+                    break;
+            }
 
     }
 
@@ -183,18 +200,18 @@ public:
     }
 
 
-   string disparar(int n1, int n2) {
+   string disparar(int n1, int n2, string quien) {
     string salida;
 
     if (!perdio2(tablero1) && !perdio2(tablero2)) {
         if (turno % 2 == 1) {
-            cout << "Disparo Jugador";
-            dispararTablero(tablero1,n1,n2);
+            dispararTablero(tablero1,n1,n2, quien);
             imprimir(tablero1, salida);
+            turno++;
         } else {
-            cout << "Disparo Maquina";
-            dispararTablero(tablero2,nAlearorio(14),nAlearorio(14));
+            dispararTablero(tablero2,nAlearorio(14),nAlearorio(14), quien);
             imprimir(tablero2, salida);
+            turno++;
         }
     } else {
         salida = "Juego Terminado";
