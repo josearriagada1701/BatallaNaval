@@ -48,7 +48,7 @@ public:
             return;
         }
 
-        char buffer[1024];
+        char buffer[2048];
 
         // Leer respuesta del servidor
         memset(buffer, 0, sizeof(buffer));

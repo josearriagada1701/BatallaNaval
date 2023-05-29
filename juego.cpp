@@ -32,15 +32,17 @@ public:
     //Recibe el tablero maquina o jugador y imprime el detalle 
     
 
-    void imprimir(int (*tablero)[15], std::string& salida) {
+    void imprimir(string& salida) {
     
     stringstream buffer;
 
+    buffer << endl << "TABLERO MIS EMBARCACIONES" << endl << endl;
+    
     for (int i = 0; i < 15; i++) {
         buffer << transformarNumeroALetra(i) << " ";
         for (int j = 0; j < 15; j++) {
             // Puse el tamaño de la embarcación y el negativo es cuando están undidos
-            switch (tablero[i][j]) {
+            switch (tablero1[i][j]) {
                 case -1:
                     buffer << "L ";
                     break;
@@ -58,10 +60,40 @@ public:
                     break;
             }
         }
-        buffer << std::endl;
+        buffer << endl;
     }
-    buffer << "-------------------------------" << std::endl;
-    buffer << "  1 2 3 4 5 6 7 8 9 . . . . . 15" << std::endl;
+    buffer << "-------------------------------" << endl;
+    buffer << "  1 2 3 4 5 6 7 8 9 . . . . . 15" << endl << endl;
+
+    buffer << endl << "TABLERO Disparos" << endl << endl;
+
+    for (int i = 0; i < 15; i++) {
+        buffer << transformarNumeroALetra(i) << " ";
+        for (int j = 0; j < 15; j++) {
+            // Puse el tamaño de la embarcación y el negativo es cuando están undidos
+            switch (tablero2[i][j]) {
+                case -1:
+                    buffer << "L ";
+                    break;
+                case -3:
+                    buffer << "S ";
+                    break;
+                case -4:
+                    buffer << "B ";
+                    break;
+                case -5:
+                    buffer << "P ";
+                    break;
+                default:
+                    buffer << "  ";
+                    break;
+            }
+        }
+        buffer << endl;
+    }
+    buffer << "-------------------------------" << endl;
+    buffer << "  1 2 3 4 5 6 7 8 9 . . . . . 15" << endl;
+
 
     salida = buffer.str();
 }
@@ -205,11 +237,11 @@ public:
     if (!perdio2(tablero1) && !perdio2(tablero2)) {
         if (turno % 2 == 1) {
             dispararTablero(tablero1,n1,n2, quien);
-            imprimir(tablero1, salida);
+            imprimir(salida);
             turno++;
         } else {
             dispararTablero(tablero2,nAlearorio(14),nAlearorio(14), quien);
-            imprimir(tablero2, salida);
+            //imprimir(tablero2, salida);
             turno++;
         }
     } else {
@@ -220,4 +252,5 @@ public:
     }
 
 };
+
 

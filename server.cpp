@@ -63,7 +63,7 @@ public:
     }
 
     string ReceiveMessage() {
-        char buffer[1024];
+        char buffer[2048];
 
         // Leer el mensaje del cliente
         memset(buffer, 0, sizeof(buffer));
