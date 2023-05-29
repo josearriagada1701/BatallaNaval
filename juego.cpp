@@ -43,17 +43,20 @@ public:
         for (int j = 0; j < 15; j++) {
             // Puse el tamaño de la embarcación y el negativo es cuando están undidos
             switch (tablero1[i][j]) {
-                case -1:
+                case 1:
                     buffer << "L ";
                     break;
-                case -3:
+                case 3:
                     buffer << "S ";
                     break;
-                case -4:
+                case 4:
                     buffer << "B ";
                     break;
-                case -5:
+                case 5:
                     buffer << "P ";
+                    break;
+                case -2:
+                    buffer << "X ";
                     break;
                 default:
                     buffer << "  ";
@@ -83,6 +86,9 @@ public:
                     break;
                 case -5:
                     buffer << "P ";
+                    break;
+                case -2:
+                    buffer << "X ";
                     break;
                 default:
                     buffer << "  ";
@@ -236,11 +242,11 @@ public:
 
     if (!perdio2(tablero1) && !perdio2(tablero2)) {
         if (turno % 2 == 1) {
-            dispararTablero(tablero1,n1,n2, quien);
+            dispararTablero(tablero2,n1,n2, quien);
             imprimir(salida);
             turno++;
         } else {
-            dispararTablero(tablero2,nAlearorio(14),nAlearorio(14), quien);
+            dispararTablero(tablero1,nAlearorio(14),nAlearorio(14), quien);
             //imprimir(tablero2, salida);
             turno++;
         }
